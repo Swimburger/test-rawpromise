@@ -3,7 +3,7 @@ interface ResponseWithRaw<T> {
   rawResponse: Response;
 }
 
-type FooResponse = {
+export type FooResponse = {
   userId: number;
   id: number;
   title: string;
