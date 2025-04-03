@@ -18,7 +18,7 @@ export namespace ResponseWithRaw {
   }
 }
 
-export class FetchWithRawPromise<T> implements PromiseLike<T> {
+export class PromiseWithRawResponse<T> implements PromiseLike<T> {
   private innerPromise: Promise<ResponseWithRaw<T>>;
 
   private constructor(promise: Promise<ResponseWithRaw<T>>) {
@@ -28,37 +28,37 @@ export class FetchWithRawPromise<T> implements PromiseLike<T> {
   public static fromFunction<T>(
     fn: () => Promise<ResponseWithRaw<T>>,
     ...args: Parameters<typeof fn>
-  ): FetchWithRawPromise<T> {
-    return new FetchWithRawPromise<T>(fn(...args));
+  ): PromiseWithRawResponse<T> {
+    return new PromiseWithRawResponse<T>(fn(...args));
   }
 
   public static fromPromise<T>(
     promise: Promise<ResponseWithRaw<T>>
-  ): FetchWithRawPromise<T> {
-    return new FetchWithRawPromise<T>(promise);
+  ): PromiseWithRawResponse<T> {
+    return new PromiseWithRawResponse<T>(promise);
   }
 
   public static fromExecutor<T>(
     executor: (
       resolve: (value: ResponseWithRaw<T>) => void,
-      reject: (reason?: any) => void
+      reject: (reason?: unknown) => void
     ) => void
-  ): FetchWithRawPromise<T> {
+  ): PromiseWithRawResponse<T> {
     const promise = new Promise<ResponseWithRaw<T>>(executor);
-    return new FetchWithRawPromise<T>(promise);
+    return new PromiseWithRawResponse<T>(promise);
   }
 
   public static fromResult<T>(
     result: ResponseWithRaw<T>
-  ): FetchWithRawPromise<T> {
+  ): PromiseWithRawResponse<T> {
     // Create a resolved promise with the given result
     const promise = Promise.resolve(result);
-    return new FetchWithRawPromise<T>(promise);
+    return new PromiseWithRawResponse<T>(promise);
   }
 
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: (value: T) => TResult1 | PromiseLike<TResult1>,
-    onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>
+    onrejected?: (reason: unknown) => TResult2 | PromiseLike<TResult2>
   ): Promise<TResult1 | TResult2> {
     return this.innerPromise.then(
       onfulfilled ? ({ data }) => onfulfilled?.(data) : undefined,
@@ -67,7 +67,7 @@ export class FetchWithRawPromise<T> implements PromiseLike<T> {
   }
 
   catch<TResult = never>(
-    onrejected?: (reason: any) => TResult | PromiseLike<TResult>
+    onrejected?: (reason: unknown) => TResult | PromiseLike<TResult>
   ): Promise<T | TResult> {
     return this.innerPromise.catch(onrejected).then((result) => {
       if (ResponseWithRaw.is<T>(result)) {
@@ -87,8 +87,8 @@ export class FetchWithRawPromise<T> implements PromiseLike<T> {
   }
 }
 
-export function getFoo(): FetchWithRawPromise<FooResponse> {
-  return FetchWithRawPromise.fromFunction<FooResponse>(async () => {
+export function getFoo(): PromiseWithRawResponse<FooResponse> {
+  return PromiseWithRawResponse.fromFunction<FooResponse>(async () => {
     const response = await fetch(
       "https://jsonplaceholder.typicode.com/posts/1"
     );
